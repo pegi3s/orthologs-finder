@@ -1,0 +1,111 @@
+#!/bin/bash
+
+set -o nounset
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+display_usage() {
+  echo -e "Obtain orthologous genes from DIOPT using a gene list as input."
+  echo -e "\nUsage:"
+  echo -e "\t`basename $0` --input_species=<input_species> --output_species=<output_species> --gene_list_file=/path/to/gene_list_file --output=/path/to/output [--gene_list_search_fields=<search_fields>] [--search_datasets=<search_datasets>] [--additional_filter=<additional_filter>]"
+  echo -e "\nWhere:"
+  echo -e "\t- <input_species> and <output_species> are the taxonomy identifiers of the input and target species."
+  echo -e "\t- the gene_list_file file contains one line for each input gene identifier."
+  echo -e "\t- <search_fields> sets the the gene identifiers type. It must be one of the values that appear in the '3. Enter Gene list' combobox at the DIOPT online tool (default is 'Entrez GeneID')."
+  echo -e "\t- <search_datasets> sets the ortholog sources. It must be one of the values that appear in the '4. Choose Ortholog Sources' combobox at the DIOPT online tool (default is 'All')."
+  echo -e "\t- <additional_filter> is an additional filter that can take one of the following values: 'None', 'Best' (return only best match when there is more than one match per input gene or protein), 'NoLow' (default, exclude low score [score > 1, unless only match score is 1]), 'AboveTwo' (exclude low scores [score > 2, unless only match score is 1 or 2]), or 'HighRank' (exclude Low Ranked Scores)."
+}
+
+error() {
+  tput setaf 1
+  echo -e "${1}\n"
+  tput sgr0
+  exit 0
+}
+
+if [[ $1 == "--help" ]]; then
+  display_usage
+  exit 1
+fi
+
+if [ $# -lt 4 ] || [ $# -gt 7]; then
+  tput setaf 1
+  echo -e "Error. This script requires between four and seven arguments arguments.\n"
+  tput sgr0
+  display_usage
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+GENE_LIST_SEARCH_FIELDS="Entrez GeneID"
+SEARCH_DATASETS="All"
+ADDITIONAL_FILTER="NoLow"
+
+for key in "$@"
+do
+case $key in
+  -is=*|--input_species=*)
+  INPUT_SPECIES="${key#*=}"
+  shift
+  ;;
+  -os=*|--output_species=*)
+  OUTPUT_SPECIES="${key#*=}"
+  shift
+  ;;
+  -gl=*|--gene_list_file=*)
+  GENE_LIST_FILE="${key#*=}"
+  shift
+  ;;
+  -o=*|--output=*)
+  OUTPUT="${key#*=}"
+  shift
+  ;;
+  -gs=*|--gene_list_search_fields=*)
+  GENE_LIST_SEARCH_FIELDS="${key#*=}"
+  shift
+  ;;
+  -sd=*|--search_datasets=*)
+  SEARCH_DATASETS="${key#*=}"
+  shift
+  ;;
+  -af=*|--additional_filter=*)
+  ADDITIONAL_FILTER="${key#*=}"
+  shift
+  ;;
+  *)
+    # unknown option
+  ;;
+esac
+done
+
+if [ ! -f "${GENE_LIST_FILE}" ];
+then
+  error "The input file does not exist."
+fi
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+TMP_DIR=$(mktemp -d /tmp/diopt-orthologs.XXXXXXXXXX)
+
+curl -s --insecure -X POST \
+  'https://www.flyrnai.org/cgi-bin/DRSC_orthologs.pl' \
+  -F input_species=${INPUT_SPECIES} \
+  -F output_species=${OUTPUT_SPECIES} \
+  -F search_fields="${GENE_LIST_SEARCH_FIELDS}" \
+  -F submit=$(uuidgen) \
+  -F search_datasets=${SEARCH_DATASETS} \
+  -F additional_filter=${ADDITIONAL_FILTER} \
+  -F gene_file="@${GENE_LIST_FILE}" > ${TMP_DIR}/0_html
+
+htmlq -f ${TMP_DIR}/0_html '#results-table' | tr '\n' ' ' | sed 's/> *</></g' | htmlq tr > ${TMP_DIR}/1_html_rows
+
+ROW=$(head -1 ${TMP_DIR}/1_html_rows)
+
+cat ${TMP_DIR}/1_html_rows | sed -e 's/<\/th><th>/\t/g; s/<br>//g; s/<tr><th>//g; s/<\/th><\/tr>//g; s/<\/td><td>/\t/g; s/<\/td><td[^>]*>/\t/g; s/<br>//g; s/<tr><td>//g; s/<\/td><\/tr>//g; s/<a[^>]*>//g; s/<\/a>//g; s/<form[^>]*>//g; s/<\/form>//g; s/<\/a>//g; s/<input[^>]*>//g; s/<\/input>//g; s/&amp; //g' > ${TMP_DIR}/2_csv_rows
+
+awk -F'\t' '{for(i=0;++i<=NF-4;) printf $i"\t"; print $(NF-3)}' ${TMP_DIR}/2_csv_rows  > ${TMP_DIR}/3_csv_rows_2
+
+sed 's/\t /\t/g; s/ \t/\t/g' ${TMP_DIR}/3_csv_rows_2 > ${OUTPUT}.tsv
+
+cut -f3,7 ${OUTPUT}.tsv > ${OUTPUT}.mapping.tsv

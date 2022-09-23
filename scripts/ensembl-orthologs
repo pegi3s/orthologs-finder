@@ -1,0 +1,93 @@
+#!/bin/bash
+
+set -o nounset
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+display_usage() {
+  echo -e "Obtain orthologous genes from Ensemble using a gene list of NCBI Gene IDs as input."
+  echo -e "\nUsage:"
+  echo -e "\t`basename $0` --input_species=<input_species> --output_species=<output_species> --gene_list_file=/path/to/gene_list_file --output=/path/to/output"
+  echo -e "\nWhere:"
+  echo -e "\t- <input_species> and <output_species> are the taxonomy identifiers of the input and target species."
+  echo -e "\t- the gene_list_file file contains one line for each input gene identifier (NCBI Gene IDs)."
+}
+
+error() {
+  tput setaf 1
+  echo -e "${1}\n"
+  tput sgr0
+  exit 0
+}
+
+if [[ $1 == "--help" ]]; then
+  display_usage
+  exit 1
+fi
+
+if [ ! $# -eq 4 ]; then
+  tput setaf 1
+  echo -e "Error. This script requires four arguments.\n"
+  tput sgr0
+  display_usage
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+for key in "$@"
+do
+case $key in
+  -is=*|--input_species=*)
+  INPUT_SPECIES="${key#*=}"
+  shift
+  ;;
+  -os=*|--output_species=*)
+  OUTPUT_SPECIES="${key#*=}"
+  shift
+  ;;
+  -gl=*|--gene_list_file=*)
+  GENE_LIST_FILE="${key#*=}"
+  shift
+  ;;
+  -o=*|--output=*)
+  OUTPUT="${key#*=}"
+  shift
+  ;;
+  *)
+    # unknown option
+  ;;
+esac
+done
+
+if [ ! -f "${GENE_LIST_FILE}" ];
+then
+  error "The input file does not exist."
+fi
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+TEMP_OUTPUT=$(mktemp /tmp/ensembl-orthologs.XXXXXXXX.tsv)
+
+touch ${TEMP_OUTPUT}
+
+echo -e "source_gene_id\tsource_ensenbl_id\tid\tspecies\ttype\tprotein_id\ttaxonomy_level\tmethod_link_type" >> ${TEMP_OUTPUT}
+
+while read -r GENE_ID; do
+  JSON=$(curl -s --insecure \
+  "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed") 
+  
+  echo ${JSON} | grep '"error"' > /dev/null
+  if [ $? -gt 0 ];
+  then    
+    TEMP_JSON=$(mktemp /tmp/ensembl-orthologs.XXXXXXXX.json)
+    SOURCE_ID=$(echo ${JSON} | jq -r '.data[0].id')
+    echo ${JSON} | jq -r '.data[0].homologies[] | [.id, .species, .type, .protein_id, .taxonomy_level, .method_link_type] | @tsv' > ${TEMP_JSON}
+    sed -e "s/^\(.*\)/${GENE_ID}\t${SOURCE_ID}\t\1/g" ${TEMP_JSON} >> ${TEMP_OUTPUT}
+    rm ${TEMP_JSON}
+  fi
+done < ${GENE_LIST_FILE}
+
+mv ${TEMP_OUTPUT} ${OUTPUT}.tsv
+
+cut -f1,3 ${OUTPUT}.tsv > ${OUTPUT}.mapping.tsv
