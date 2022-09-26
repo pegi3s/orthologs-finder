@@ -28,7 +28,7 @@ if [[ $1 == "--help" ]]; then
   exit 1
 fi
 
-if [ $# -lt 4 ] || [ $# -gt 7]; then
+if [ $# -lt 4 ] || [ $# -gt 7 ]; then
   tput setaf 1
   echo -e "Error. This script requires between four and seven arguments arguments.\n"
   tput sgr0

@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   orthologs-finder:
-    image: pegi3s/orthologs-finder:1.0.0
+    image: pegi3s/orthologs-finder:1.0.1
     build:
       context: ./
       dockerfile: Dockerfile
