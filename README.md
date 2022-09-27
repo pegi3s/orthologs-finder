@@ -27,6 +27,8 @@ This script produces two TSV files:
 - `/path/to/output.tsv`: the full conversion report provided by DIOPT.
 - `/path/to/output.mapping.tsv`: a two-column TSV containing the gene identifiers in the input and target species.
 
+Note that both files may be empty if none of the input identifiers can be mapped. In some cases, when some identifiers are mapped and others are not, umapped identifiers appear in the tables as *none found*.
+
 You can use the input files in the `test_data` directory to try this command.
 ```sh
 docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted
