@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SHOW_DEBUGGING_INFO=${SHOW_DEBUGGING_INFO:-"disabled"}
+
 set -o nounset
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -67,6 +69,11 @@ fi
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+INPUT_SPECIES_NAME=$(list-species | grep -w -P "${INPUT_SPECIES}$" | cut -f1)
+if [ ! -z ${INPUT_SPECIES_NAME} ]; then 
+  INPUT_SPECIES=${INPUT_SPECIES_NAME}
+fi
+
 TEMP_OUTPUT=$(mktemp /tmp/ensembl-orthologs.XXXXXXXX.tsv)
 
 touch ${TEMP_OUTPUT}
@@ -74,6 +81,9 @@ touch ${TEMP_OUTPUT}
 echo -e "source_gene_id\tsource_ensenbl_id\tid\tspecies\ttype\tprotein_id\ttaxonomy_level\tmethod_link_type" >> ${TEMP_OUTPUT}
 
 while read -r GENE_ID; do
+  if [ "${SHOW_DEBUGGING_INFO}" == "enabled" ]; then
+    echo curl -s --insecure "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed"
+  fi
   JSON=$(curl -s --insecure \
   "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed") 
   

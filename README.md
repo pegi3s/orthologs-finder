@@ -56,13 +56,26 @@ Where you should replace:
 
 This script produces two TSV files:
 - `/path/to/output.tsv`: the full conversion report provided by Ensembl. The first and second columns are the input gene identifier (`source_gene_id` and `source_ensenbl_id`) and the remaining ones are referred to the corresponding orthologous genes in the target species.
-- `/path/to/output.mapping.tsv`: a two-column TSV containing the gene identifiers in the input (`source_gene_id`) and target species (`id`). Note that the gene identifiers on the target species may belong to different databases depending on the target species (e.g. if the target species is *Drosophila melanogaster*, these may be *FBgnXXXX* identifiers, whereas for *Mus musculus* they are Ensembl IDs).
+- `/path/to/output.mapping.tsv`: a two-column TSV containing the gene identifiers in the input (`source_gene_id`) and target species (`id`). Note that the gene identifiers on the target species may belong to different databases depending on the target species (e.g. if the target species is *Drosophila melanogaster*, these may be FlyBase [*FBgnXXXX*] identifiers; if the target species is *Caenorhabditis elegans*, these may be WormBase IDs [*WBGeneXXXXX*]; and if the target species are *Homo sapiens* or *Mus musculus*, these may be Ensembl IDs [*ENSGXXXXX* or *ENSMUSGXXXXX*]).
 
 You can use the input files in the `test_data` directory to try this command.
 ```sh
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted_to_Homo_sapiens 
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted_to_Homo_sapiens
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=6239 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_C_Elegans
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Drosophila
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=10090 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Mus_musculus
 ```
+
+### Notes
+
+The script uses the input species name to perform the queries. The species name associated to input taxonomy ID is obtained using the `list-species` command. If not found, then the input taxonomy ID is used, which in some cases may not work.
+
+### Debugging
+
+To show additional debugging info, just add `-e SHOW_DEBUGGING_INFO=enabled` to the `docker run` command.
+
