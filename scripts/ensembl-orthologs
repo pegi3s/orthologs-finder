@@ -20,7 +20,7 @@ error() {
   tput setaf 1
   echo -e "${1}\n"
   tput sgr0
-  exit 0
+  exit 1
 }
 
 if [[ $1 == "--help" ]]; then
@@ -33,7 +33,7 @@ if [ ! $# -eq 4 ]; then
   echo -e "Error. This script requires four arguments.\n"
   tput sgr0
   display_usage
-  exit 0
+  exit 1
 fi
 
 # ---------------------------------------------------------------------------------------------------------------------

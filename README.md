@@ -6,7 +6,7 @@ This image includes two commands to retrieve orthologous genes from input lists 
 
 Both commands accept as input a TXT containing a list of Gene IDs (`--gene_list_file`), the input species (`--input_species`) and the target or output species (`--output_species`). Examples of both commands are provided below.
 
-An additional command (`list-species`) is provided to show the taxonomy identifiers of the most common species: `docker run --rm pegi3s/orthologs-finder list-species`.
+An additional command (`list-species`) is provided to show the taxonomy identifiers of the most common species: `docker run --rm pegi3s/orthologs-finder list-species`. This command can receive a parameter (`uniprot_with_proteome` or `uniprot_with_kb_entries`) to list taxonomy ID lists for species available at UniProt (it just shows pre-downloaded files obtained from [UniProt taxonomy](https://www.uniprot.org/taxonomy/)).
 
 ## `diopt-orthologs`
 

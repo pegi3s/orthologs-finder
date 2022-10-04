@@ -1,3 +1,46 @@
 #!/bin/bash
 
-cat /opt/orthologs-finder/species.tsv
+# ---------------------------------------------------------------------------------------------------------------------
+
+display_usage() {
+  echo -e "List species and taxonomy IDs."
+  echo -e "\nUsage:"
+  echo -e "\t`basename $0`"
+  echo -e "\t`basename $0` <source>"
+  echo -e "\nWhere:"
+  echo -e "\t- <source> is 'uniprot_with_proteome' or 'uniprot_with_kb_entries'"
+}
+
+error() {
+  tput setaf 1
+  echo -e "${1}\n"
+  tput sgr0
+  exit 1
+}
+
+if [ ! $# -eq 1 ] && [ ! $# -eq 0 ]; then
+  tput setaf 1
+  echo -e "Error. This script requires one argument or none.\n"
+  tput sgr0
+  display_usage
+  exit 1
+fi
+
+if [[ $1 == "--help" ]]; then
+  display_usage
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+if [ $# -eq 1 ]; then
+    if [[ "uniprot_with_proteome" == "${1}" ]]; then
+        zcat /opt/orthologs-finder/uniprot-taxonomy-with-proteome.gzip
+    elif [[ "uniprot_with_kb_entries" == "${1}" ]]; then
+        zcat /opt/orthologs-finder/uniprot-taxonomy-with-uniprotkb-entries.gzip
+    else
+        error "Unknown option ${1}"
+    fi
+else
+    cat /opt/orthologs-finder/species.tsv
+fi
