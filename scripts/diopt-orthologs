@@ -108,4 +108,10 @@ awk -F'\t' '{for(i=0;++i<=NF-4;) printf $i"\t"; print $(NF-3)}' ${TMP_DIR}/2_csv
 
 sed 's/\t /\t/g; s/ \t/\t/g' ${TMP_DIR}/3_csv_rows_2 > ${OUTPUT}.tsv
 
-cut -f3,7 ${OUTPUT}.tsv > ${OUTPUT}.mapping.tsv
+cut -f3,7 ${OUTPUT}.tsv > ${TMP_DIR}/mapping.tsv
+
+grep -v 'none found' ${TMP_DIR}/mapping.tsv > ${OUTPUT}.mapping.tsv
+
+cat ${OUTPUT}.mapping.tsv | cut -f1 > ${TMP_DIR}/mapped_ids.txt
+
+grep -v -w -f ${TMP_DIR}/mapped_ids.txt ${GENE_LIST_FILE} > ${OUTPUT}.unmapped.txt

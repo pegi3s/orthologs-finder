@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SHOW_DEBUGGING_INFO=${SHOW_DEBUGGING_INFO:-"disabled"}
+DELAY_BETWEEN_QUERIES=${DELAY_BETWEEN_QUERIES:-1}
 
 set -o nounset
 
@@ -86,6 +87,7 @@ while read -r GENE_ID; do
   fi
   JSON=$(curl -s --insecure \
   "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed") 
+  sleep ${DELAY_BETWEEN_QUERIES}
   
   echo ${JSON} | grep '"error"' > /dev/null
   if [ $? -gt 0 ];
@@ -101,3 +103,11 @@ done < ${GENE_LIST_FILE}
 mv ${TEMP_OUTPUT} ${OUTPUT}.tsv
 
 cut -f1,3 ${OUTPUT}.tsv > ${OUTPUT}.mapping.tsv
+
+TMP_MAPPED_IDS=$(mktemp /tmp/ensembl-orthologs_mapped_ids.XXXXXX.txt)
+
+cat ${OUTPUT}.mapping.tsv | cut -f1 > ${TMP_MAPPED_IDS}
+
+grep -v -w -f ${TMP_MAPPED_IDS} ${GENE_LIST_FILE} > ${OUTPUT}.unmapped.txt
+
+rm ${TMP_MAPPED_IDS}

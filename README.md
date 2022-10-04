@@ -26,16 +26,15 @@ Where you should replace:
 This script produces two TSV files:
 - `/path/to/output.tsv`: the full conversion report provided by DIOPT.
 - `/path/to/output.mapping.tsv`: a two-column TSV containing the gene identifiers in the input and target species.
-
-Note that both files may be empty if none of the input identifiers can be mapped. In some cases, when some identifiers are mapped and others are not, umapped identifiers appear in the tables as *none found*.
+- `/path/to/output.unmapped.txt`: a plain text file containing the gene identifiers in the input species that could not be mapped.
 
 You can use the input files in the `test_data` directory to try this command.
 ```sh
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted_to_Homo_sapiens
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted_to_Homo_sapiens
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Drosophila
 ```
 
 ### Debugging
@@ -57,6 +56,7 @@ Where you should replace:
 This script produces two TSV files:
 - `/path/to/output.tsv`: the full conversion report provided by Ensembl. The first and second columns are the input gene identifier (`source_gene_id` and `source_ensenbl_id`) and the remaining ones are referred to the corresponding orthologous genes in the target species.
 - `/path/to/output.mapping.tsv`: a two-column TSV containing the gene identifiers in the input (`source_gene_id`) and target species (`id`). Note that the gene identifiers on the target species may belong to different databases depending on the target species (e.g. if the target species is *Drosophila melanogaster*, these may be FlyBase [*FBgnXXXX*] identifiers; if the target species is *Caenorhabditis elegans*, these may be WormBase IDs [*WBGeneXXXXX*]; and if the target species are *Homo sapiens* or *Mus musculus*, these may be Ensembl IDs [*ENSGXXXXX* or *ENSMUSGXXXXX*]).
+- `/path/to/output.unmapped.txt`: a plain text file containing the gene identifiers in the input species that could not be mapped.
 
 You can use the input files in the `test_data` directory to try this command.
 ```sh
@@ -73,7 +73,8 @@ docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder
 
 ### Notes
 
-The script uses the input species name to perform the queries. The species name associated to input taxonomy ID is obtained using the `list-species` command. If not found, then the input taxonomy ID is used, which in some cases may not work.
+- The script uses the input species name to perform the queries. The species name associated to input taxonomy ID is obtained using the `list-species` command. If not found, then the input taxonomy ID is used, which in some cases may not work.
+- The script makes one query to the Ensembl REST API for each gene identifier to be converted, waiting 1 second between queries by default. To increase or decrease this number, set the `DELAY_BETWEEN_QUERIES` environment variable (add `-e DELAY_BETWEEN_QUERIES=0.5` to the `docker run` command).
 
 ### Debugging
 
