@@ -82,12 +82,16 @@ touch ${TEMP_OUTPUT}
 echo -e "source_gene_id\tsource_ensenbl_id\tid\tspecies\ttype\tprotein_id\ttaxonomy_level\tmethod_link_type" >> ${TEMP_OUTPUT}
 
 while read -r GENE_ID; do
-  if [ "${SHOW_DEBUGGING_INFO}" == "enabled" ]; then
-    echo curl -s --insecure "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed"
-  fi
-  JSON=$(curl -s --insecure \
-  "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed") 
-  sleep ${DELAY_BETWEEN_QUERIES}
+  JSON='<html'
+  until [[ "${JSON}" != *"<html"* ]]; do
+    JSON=$(curl -s --insecure \
+    "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed") 
+    if [ "${SHOW_DEBUGGING_INFO}" == "enabled" ]; then
+        echo curl -s --insecure "https://rest.ensembl.org/homology/symbol/${INPUT_SPECIES}/${GENE_ID}?content-type=application/json;type=orthologues;target_taxon=${OUTPUT_SPECIES};format=condensed"
+        echo ${JSON}
+    fi
+    sleep ${DELAY_BETWEEN_QUERIES}
+  done  
   
   echo ${JSON} | grep '"error"' > /dev/null
   if [ $? -gt 0 ];
