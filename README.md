@@ -30,11 +30,19 @@ This script produces two TSV files:
 
 You can use the input files in the `test_data` directory to try this command.
 ```sh
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted_to_Homo_sapiens
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted_to_Homo_sapiens.DIOPT
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted_to_Homo_sapiens
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted_to_Homo_sapiens.DIOPT
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Drosophila
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=7955 --output_species=9606 --gene_list_file=gene_list_danio_rerio_7955 --output=gene_list_danio_rerio_7955_converted_to_Homo_sapiens.DIOPT
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=9606 --output_species=6239 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_C_Elegans.DIOPT
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Drosophila.DIOPT
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=9606 --output_species=10090 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Mus_musculus.DIOPT
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder diopt-orthologs --input_species=9606 --output_species=7955 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Danio_rerio.DIOPT
 ```
 
 ### Debugging
@@ -55,26 +63,36 @@ Where you should replace:
 
 This script produces two TSV files:
 - `/path/to/output.tsv`: the full conversion report provided by Ensembl. The first and second columns are the input gene identifier (`source_gene_id` and `source_ensenbl_id`) and the remaining ones are referred to the corresponding orthologous genes in the target species.
-- `/path/to/output.mapping.tsv`: a two-column TSV containing the gene identifiers in the input (`source_gene_id`) and target species (`id`). Note that the gene identifiers on the target species may belong to different databases depending on the target species (e.g. if the target species is *Drosophila melanogaster*, these may be FlyBase [*FBgnXXXX*] identifiers; if the target species is *Caenorhabditis elegans*, these may be WormBase IDs [*WBGeneXXXXX*]; and if the target species are *Homo sapiens* or *Mus musculus*, these may be Ensembl IDs [*ENSGXXXXX* or *ENSMUSGXXXXX*]).
+- `/path/to/output.mapping.tsv`: a two-column TSV containing the gene identifiers in the input (`source_gene_id`) and target species (`id`). Note that the gene identifiers on the target species may belong to different databases depending on the target species (e.g. if the target species is *Drosophila melanogaster*, these may be FlyBase [*FBgnXXXX*] identifiers; if the target species is *Caenorhabditis elegans*, these may be WormBase IDs [*WBGeneXXXXX*]; and if the target species are *Homo sapiens*, *Mus musculus*, or *Danio rerio*, these may be Ensembl IDs [*ENSGXXXXX*, *ENSMUSGXXXXX*, or *ENSDARGXXXXX*]).
 - `/path/to/output.unmapped.txt`: a plain text file containing the gene identifiers in the input species that could not be mapped.
 
 You can use the input files in the `test_data` directory to try this command.
 ```sh
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted_to_Homo_sapiens 
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=10090 --output_species=9606 --gene_list_file=gene_list_mus_musculus_10090 --output=gene_list_mus_musculus_10090_converted_to_Homo_sapiens.Ensembl
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted_to_Homo_sapiens
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=7227 --output_species=9606 --gene_list_file=gene_list_dros_7227 --output=gene_list_dros_7227_converted_to_Homo_sapiens.Ensembl
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=6239 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_C_Elegans
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=7955 --output_species=9606 --gene_list_file=gene_list_danio_rerio_7955 --output=gene_list_danio_rerio_7955_converted_to_Homo_sapiens.Ensembl
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Drosophila
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=6239 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_C_Elegans.Ensembl
 
-docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=10090 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Mus_musculus
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=7227 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Drosophila.Ensembl
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=10090 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Mus_musculus.Ensembl
+
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=7955 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Danio_rerio.Ensembl
 ```
 
 ### Notes
 
 - The script uses the input species name to perform the queries. The species name associated to input taxonomy ID is obtained using the `list-species` command. If not found, then the input taxonomy ID is used, which in some cases may not work.
 - The script makes one query to the Ensembl REST API for each gene identifier to be converted, waiting 1 second between queries by default. To increase or decrease this number, set the `DELAY_BETWEEN_QUERIES` environment variable (add `-e DELAY_BETWEEN_QUERIES=0.5` to the `docker run` command).
+- The script shows the gene being queried every 100 genes. To change this value, set the `SHOW_GENES_INFO_BATCH_SIZE` environment variable (add `-e SHOW_GENES_INFO_BATCH_SIZE=<new_value>` to the `docker run` command).
+
+For instance, the last example command will be:
+```sh
+docker run --rm -it -v "$(pwd)/test_data:/data" -w /data -e DELAY_BETWEEN_QUERIES=0.5 -e SHOW_GENES_INFO_BATCH_SIZE=1 pegi3s/orthologs-finder ensembl-orthologs --input_species=9606 --output_species=7955 --gene_list_file=gene_list_homo_9606 --output=gene_list_homo_9606_converted_to_Danio_rerio.Ensembl
+```
 
 ### Debugging
 
